@@ -2,7 +2,7 @@ sitezoo
 =======
 **(c)[Bumblehead][0]**
 
-Returns a json-list of internal links for a website. This can be used to generate a sitemap.
+Returns a list of internal links for a website. This can be used to generate a sitemap.
 
 **alpha quality, not recommended**
 
