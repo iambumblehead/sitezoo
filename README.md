@@ -13,7 +13,7 @@ A robust sitemap generator would be difficult to complete without many test-case
 ### usage
 
 ```javascript
-const sitezoo = require('../');
+const sitezoo = require('sitezoo');
 
 sitezoo({
   urls: ['http://chris.bumblehead.com:8585/'],
