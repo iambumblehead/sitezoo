@@ -1,0 +1,25 @@
+{
+  "name": "sitezoo",
+  "main": "src/sitezoo",
+  "version": "0.0.1",
+  "description": "sitemap generator",
+  "author": "Chris <chris@bumblehead.com>",
+  "license": "MIT",
+  "readmeFilename": "README.md",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/iambumblehead/sitezoo.git"
+  },
+  "keywords": [
+    "sitemap"
+  ],
+  "dependencies": {
+    "immutable": "^3.8.1",
+    "htmlparser2": "^3.9.2",
+    "superagent": "^3.5.2",
+    "url": "^0.11.0"
+  },
+  "scripts": {
+    "test": "node spec/test-run.js"
+  }
+}
