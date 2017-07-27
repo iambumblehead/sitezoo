@@ -1,5 +1,5 @@
 // Filename: sitezoo_build.js  
-// Timestamp: 2017.07.22-18:02:58 (last modified)
+// Timestamp: 2017.07.27-13:02:21 (last modified)
 // Author(s): bumblehead <chris@bumblehead.com>
 
 const url = require('url'),
@@ -75,7 +75,7 @@ module.exports = (o => {
     sitezoo_log.requesturl(opts, url);
     
     o.request(url, opts, (err, res) => {
-      if (err) throw new Error(err);
+      if (err) return sitezoo_log.error(opts, err);
 
       graph = sitezoo_graph.setnode(
         graph, sitezoo_node.get(url), pkey && graph.get(pkey), url);
@@ -84,9 +84,11 @@ module.exports = (o => {
         if (err) return fn(err);
 
         urls = o.normalisefilter(opts, url, urls);
-        
+
         o.addlinkednodes(opts, urls, graph, (err, graph, res3) => {
           if (err) return fn(err);
+
+          opts.onresponse(res, url, urls, graph.get(url));
           
           fn(null, graph, url);
         }, url);
