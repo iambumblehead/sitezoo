@@ -12,7 +12,8 @@ module.exports = (opt = {}) => {
   finopt.preventurl = opt.preventurl || (url => false);
   finopt.preventurlrequest = opt.preventurlrequest || (url => false);
   finopt.onresponse = opt.onresponse || (res => false);
-  
+  finopt.issilent = castas.bool(opt.issilent, false);
+
   return finopt;
 };
   
