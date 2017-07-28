@@ -88,9 +88,12 @@ module.exports = (o => {
         o.addlinkednodes(opts, urls, graph, (err, graph, res3) => {
           if (err) return fn(err);
 
-          opts.onresponse(res, url, urls, graph.get(url));
-          
-          fn(null, graph, url);
+          opts.onresponse(graph.get(url), res, url, urls, (err, node) => {
+
+            graph = graph.set(node.get(url), node);
+            
+            fn(null, graph, url);
+          });
         }, url);
       });
     });

@@ -4,9 +4,7 @@ sitezoo
 
 Returns a list of internal links for a website. This can be used to generate a sitemap.
 
-**alpha quality, not recommended**
-
-A robust sitemap generator would be difficult to complete without many test-cases. I've added support for my own basic requirements, but **if you have a request feel free to open an issue** for that request. I'm happy to support more use-cases.
+**alpha quality, not recommended**. A robust sitemap generator would be difficult to complete without many test-cases. I've added support for my own basic requirements, but **if you have a request feel free to open an issue** for that request. I'm happy to support more use-cases.
 
 
 ----------------------------------------

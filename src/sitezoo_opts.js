@@ -11,7 +11,9 @@ module.exports = (opt = {}) => {
   finopt.delay = castas.num(opt.delay, 20);
   finopt.preventurl = opt.preventurl || (url => false);
   finopt.preventurlrequest = opt.preventurlrequest || (url => false);
-  finopt.onresponse = opt.onresponse || (res => false);
+  finopt.onresponse = opt.onresponse ||
+    ((node, httpres, urlstr, urls, fn) => fn(null, node));
+  
   finopt.issilent = castas.bool(opt.issilent, false);
 
   return finopt;
