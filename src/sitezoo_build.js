@@ -89,6 +89,7 @@ module.exports = (o => {
           if (err) return fn(err);
 
           opts.onresponse(graph.get(url), res, url, urls, (err, node) => {
+            if (err) return fn(err);
 
             graph = graph.set(node.get(url), node);
             
@@ -101,8 +102,10 @@ module.exports = (o => {
   
   o.addlinkednodes = (opts, urls, graph, fn, pkey) => {
     if (!urls[0]) return fn(null, graph, pkey);
-    
+
     o.addlinkednode(opts, urls[0], graph, (err, graph, pkey) => {
+      if (err) return fn(err);
+
       o.addlinkednodes(opts, urls.slice(1), graph, fn, pkey);
     }, pkey);
   };
