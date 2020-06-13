@@ -2,7 +2,7 @@
 // Timestamp: 2017.07.27-12:41:47 (last modified)
 // Author(s): bumblehead <chris@bumblehead.com>
 
-const castas = require('castas');
+const castas = require('castas').default;
 
 module.exports = (opt = {}) => {
   let finopt = {};
