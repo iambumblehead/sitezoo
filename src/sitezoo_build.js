@@ -19,6 +19,9 @@ module.exports = (o => {
   o.request = (urlstr, opts, fn) =>
     superagent.get(urlstr).end(fn);
 
+  o.protocol = urlstr =>
+    url.parse(urlstr).protocol;
+
   o.hostname = urlstr =>
     url.parse(urlstr).hostname;
 
@@ -28,13 +31,19 @@ module.exports = (o => {
   o.striplink = urlstr =>
     urlstr.replace(/(#|\?).*/, '');
 
-  o.normalisehref = (baseurl, href) =>
-    o.hostname(href)
-      ? url.resolve(o.hostname(href), o.pathname(href))
+  o.normalisehref = (baseurl, href) => {
+    return o.hostname(href)
+      ? url.resolve(o.protocol(href) + '//' + o.hostname(href), o.pathname(href))
       : url.resolve(baseurl, href);
+  };
 
-  o.isinternal = (baseurl, url) =>
-    o.hostname(baseurl) === o.hostname(url);
+  o.stripsubdomain = url => {
+    return url.split('.').slice(-2).join('.');
+  };
+
+  o.tophostname = url => o.stripsubdomain(o.hostname(url));
+
+  o.isinternal = (baseurl, url) => o.tophostname(baseurl) === o.tophostname(url);
 
   o.domparser = (htmlstr, fn) => {
     var parser = new Parser(new DomHandler(fn));
