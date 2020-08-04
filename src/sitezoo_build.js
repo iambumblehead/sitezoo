@@ -16,8 +16,9 @@ module.exports = (o => {
   o = (opts, fn) =>
     o.start(opts, fn);
 
-  o.request = (urlstr, opts, fn) =>
-    superagent.get(urlstr).end(fn);
+  o.request = (urlstr, opts, fn) => superagent
+    .get(urlstr)
+    .end(fn);
 
   o.protocol = urlstr =>
     url.parse(urlstr).protocol;
