@@ -18,6 +18,7 @@ module.exports = (o => {
 
   o.request = (urlstr, opts, fn) => superagent
     .get(urlstr)
+    .disableTLSCerts()
     .end(fn);
 
   o.protocol = urlstr =>

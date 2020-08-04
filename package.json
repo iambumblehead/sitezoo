@@ -1,7 +1,7 @@
 {
   "name": "sitezoo",
   "main": "src/sitezoo",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "sitemap generator",
   "author": "Chris <chris@bumblehead.com>",
   "license": "MIT",
