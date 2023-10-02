@@ -2,7 +2,7 @@
 // Timestamp: 2017.07.27-12:41:47 (last modified)
 // Author(s): bumblehead <chris@bumblehead.com>
 
-import castas from 'castas.js'
+import castas from 'castas'
 
 export default (opt = {}) => {
   const finopt = {};
