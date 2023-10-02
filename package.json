@@ -2,7 +2,7 @@
   "name": "sitezoo",
   "main": "src/sitezoo.js",
   "type": "module",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "sitemap generator",
   "author": "Chris <chris@bumblehead.com>",
   "license": "MIT",

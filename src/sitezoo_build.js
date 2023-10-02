@@ -10,14 +10,18 @@ import sitezoo_node from './sitezoo_node.js'
 import sitezoo_opts from './sitezoo_opts.js'
 import sitezoo_log from './sitezoo_log.js'
 
-const request = async (urlstr, opts, fn) => {
-  const response = await fetch(urlstr).then(async res => ({
-    ...res,
-    text: await res.text().catch(() => '')
-  }));
+const fetchNormal = (uri, opts) => fetch(uri, opts).then(async res => ({
+  body: /application\/json/.test(res.headers.get('content-type'))
+    ? await res.json().catch(() => null)
+    : await res.text().catch(() => null),
+  status: res.status,
+  statusText: res.statusText,
+  redirected: res.redirected,
+  url: res.url
+})).catch(e => e)
 
-  fn(null, response)
-}
+const request = async (urlstr, opts, fn) => (
+  fn(null, await fetchNormal(urlstr)))
 
 const protocol = urlstr => (
   url.parse(urlstr).protocol);
@@ -44,8 +48,8 @@ const tophostname = url => stripsubdomain(hostname(url));
 const isinternal = (baseurl, url) => (
   tophostname(baseurl) === tophostname(url));
 
-const domparser = (htmlstr, fn) => {
-  var parser = new Parser(new DomHandler(fn));
+const domparser = (htmlstr, fn, parser) => {
+  parser = new Parser(new DomHandler(fn));
   parser.write(htmlstr);
   parser.end();
 };
@@ -89,7 +93,7 @@ const addlinkednode = (opts, url, graph, fn, pkey) => {
     graph = sitezoo_graph.setnode(
       graph, sitezoo_node.get(url), pkey && graph.get(pkey), url);
     
-    parselinks(opts, res.text, url, (err, urls) => {
+    parselinks(opts, res.body, url, (err, urls) => {
       if (err) return fn(err);
 
       urls = normalisefilter(opts, url, urls);
