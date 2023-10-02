@@ -1,19 +1,18 @@
-const immutable = require('immutable');
+import immutable from 'immutable'
 
-module.exports = (o => {
+const get = (refname, uid) => immutable.Map({
+  refname : refname,
+  uid     : uid
+})
+  
+const issame = (edgea, edgeb) => 
+  immutable.is(edgea, edgeb);
 
-  o.get = (refname, uid) =>
-    immutable.Map({
-      refname : refname,
-      uid     : uid
-    });
-  
-  o.issame = (edgea, edgeb) => 
-    immutable.is(edgea, edgeb);
+const issamenot = (edgea, edgeb) =>
+  !issame(edgea, edgeb);
 
-  o.issamenot = (edgea, edgeb) =>
-    !o.issame(edgea, edgeb);
-  
-  return o;
-  
-})({});
+export default {
+  get,
+  issame,
+  issamenot
+}

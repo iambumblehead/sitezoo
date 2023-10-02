@@ -2,7 +2,7 @@
 // Timestamp: 2017.07.22-18:56:15 (last modified)
 // Author(s): bumblehead <chris@bumblehead.com>
 
-const sitezoo = require('../');
+import sitezoo from '../src/sitezoo.js'
 
 sitezoo({
   urls: ['http://chris.bumblehead.com:8585/'],

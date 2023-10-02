@@ -1,36 +1,37 @@
-const immutable = require('immutable'),
+import immutable from 'immutable'
 
-      sitezoo_edge = require('./sitezoo_edge');
+import sitezoo_edge from './sitezoo_edge.js'
 
-module.exports = (o => {
+// module.exports = (o => {
   
-  // 'in'  are dependents
-  // 'out' are dependencies
-  //
-  // nodes with 'in' degree of 0 are tree root nodes
-  o.get = (url) =>
-    immutable.Map({
-      url   : url,
-      uid   : url,
-      inarr : immutable.List(),
-      outarr: immutable.List()
-    });
+// 'in'  are dependents
+// 'out' are dependencies
+//
+// nodes with 'in' degree of 0 are tree root nodes
+const get = url => immutable.Map({
+  url   : url,
+  uid   : url,
+  inarr : immutable.List(),
+  outarr: immutable.List()
+});
 
-  o.setedge = (node, uid, refname, edgename) => {
-    var edge = sitezoo_edge.get(refname, uid);
+const setedge = (node, uid, refname, edgename) => {
+  var edge = sitezoo_edge.get(refname, uid);
 
-    return node.set(edgename, node.get(edgename).filter((inedge) => (
-      sitezoo_edge.issamenot(edge, inedge)
-    )).push(edge));
-  };
-  
-  o.setedgein = (node, uid, refname) => 
-    o.setedge(node, uid, refname, 'inarr');
+  return node.set(edgename, node.get(edgename).filter((inedge) => (
+    sitezoo_edge.issamenot(edge, inedge)
+  )).push(edge));
+};
 
-  o.setedgeout = (node, uid, refname) =>
-    o.setedge(node, uid, refname, 'outarr');
-  
+const setedgein = (node, uid, refname) => (
+  setedge(node, uid, refname, 'inarr'))
 
-  return o;
+const setedgeout = (node, uid, refname) => (
+  setedge(node, uid, refname, 'outarr'))
 
-})({});
+export default {
+  get,
+  setedge,
+  setedgein,
+  setedgeout
+}

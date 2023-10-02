@@ -2,10 +2,10 @@
 // Timestamp: 2017.07.27-12:41:47 (last modified)
 // Author(s): bumblehead <chris@bumblehead.com>
 
-const castas = require('castas').default;
+import castas from 'castas'
 
-module.exports = (opt = {}) => {
-  let finopt = {};
+export default (opt = {}) => {
+  const finopt = {};
 
   finopt.urls  = castas.arr(opt.urls, []);
   finopt.delay = castas.num(opt.delay, 20);
