@@ -2,137 +2,147 @@
 // Timestamp: 2017.07.27-13:02:21 (last modified)
 // Author(s): bumblehead <chris@bumblehead.com>
 
-const url = require('url'),
-      superagent = require('superagent'),
-      {DomUtils,DomHandler,Parser} = require("htmlparser2"),
+import url from 'node:url'
+import {DomUtils,DomHandler,Parser} from 'htmlparser2'
       
-      sitezoo_graph = require('./sitezoo_graph'),
-      sitezoo_node = require('./sitezoo_node'),
-      sitezoo_opts = require('./sitezoo_opts'),
-      sitezoo_log = require('./sitezoo_log');
+import sitezoo_graph from './sitezoo_graph.js'
+import sitezoo_node from './sitezoo_node.js'
+import sitezoo_opts from './sitezoo_opts.js'
+import sitezoo_log from './sitezoo_log.js'
 
-module.exports = (o => {
+const request = async (urlstr, opts, fn) => {
+  const response = await fetch(urlstr).then(async res => ({
+    ...res,
+    text: await res.text().catch(() => '')
+  }));
 
-  o = (opts, fn) =>
-    o.start(opts, fn);
+  fn(null, response)
+}
 
-  o.request = (urlstr, opts, fn) => superagent
-    .get(urlstr)
-    .disableTLSCerts()
-    .end(fn);
+const protocol = urlstr => (
+  url.parse(urlstr).protocol);
 
-  o.protocol = urlstr =>
-    url.parse(urlstr).protocol;
+const hostname = urlstr => (
+  url.parse(urlstr).hostname);
 
-  o.hostname = urlstr =>
-    url.parse(urlstr).hostname;
-
-  o.pathname = urlstr =>
-    url.parse(urlstr).pathname;  
+const pathname = urlstr => (
+  url.parse(urlstr).pathname);
   
-  o.striplink = urlstr =>
-    urlstr.replace(/(#|\?).*/, '');
+const striplink = urlstr => (
+  urlstr.replace(/(#|\?).*/, ''));
 
-  o.normalisehref = (baseurl, href) => {
-    return o.hostname(href)
-      ? url.resolve(o.protocol(href) + '//' + o.hostname(href), o.pathname(href))
-      : url.resolve(baseurl, href);
-  };
+const normalisehref = (baseurl, href) => (
+  hostname(href)
+    ? url.resolve(protocol(href) + '//' + hostname(href), pathname(href))
+    : url.resolve(baseurl, href))
 
-  o.stripsubdomain = url => {
-    return url.split('.').slice(-2).join('.');
-  };
+const stripsubdomain = url => (
+  url.split('.').slice(-2).join('.'))
 
-  o.tophostname = url => o.stripsubdomain(o.hostname(url));
+const tophostname = url => stripsubdomain(hostname(url));
 
-  o.isinternal = (baseurl, url) => o.tophostname(baseurl) === o.tophostname(url);
+const isinternal = (baseurl, url) => (
+  tophostname(baseurl) === tophostname(url));
 
-  o.domparser = (htmlstr, fn) => {
-    var parser = new Parser(new DomHandler(fn));
-    parser.write(htmlstr);
-    parser.end();
-  };
+const domparser = (htmlstr, fn) => {
+  var parser = new Parser(new DomHandler(fn));
+  parser.write(htmlstr);
+  parser.end();
+};
 
-  o.isprotocolweb = urlstr =>
-    !/^(ftp|mailto|telnet|file|news):/.test(urlstr);
+const isprotocolweb = urlstr => (
+  !/^(ftp|mailto|telnet|file|news):/.test(urlstr));
 
   // - remove hash and or params
   // - normalise path to provide full url
-  o.normalisefilter = (opts, baseurl, linkarr) => linkarr
-    .map(elem => o.normalisehref(baseurl, o.striplink(elem)))
-    .filter(url => o.isinternal(baseurl, url) && !opts.preventurl(url));
+const normalisefilter = (opts, baseurl, linkarr) => linkarr
+  .map(elem => normalisehref(baseurl, striplink(elem)))
+  .filter(url => isinternal(baseurl, url) && !opts.preventurl(url));
   
-  o.parselinks = (opts, htmlstr, baseurl, fn) => 
-    o.domparser(htmlstr, (err, dom) => {
+const parselinks = (opts, htmlstr, baseurl, fn) => (
+  domparser(htmlstr, (err, dom) => {
+    if (err) return fn(err);
+
+    fn(null, DomUtils
+       .getElementsByTagName('a', dom, true)
+       .reduce((accum, elem) => (
+         DomUtils.hasAttrib(elem, 'href')
+           && accum.push(DomUtils.getAttributeValue(elem, 'href')),
+         accum), [])
+       .filter(isprotocolweb));
+  })
+);
+
+const addlinkednode = (opts, url, graph, fn, pkey) => {
+  if (graph.has(url)) {
+    graph = sitezoo_graph.setnode(
+      graph, sitezoo_node.get(url), pkey && graph.get(pkey), url);
+    
+    return fn(null, graph, pkey);
+  }
+  
+  sitezoo_log.requesturl(opts, url);
+  
+  request(url, opts, (err, res) => {
+    if (err) return sitezoo_log.error(opts, err);
+
+    graph = sitezoo_graph.setnode(
+      graph, sitezoo_node.get(url), pkey && graph.get(pkey), url);
+    
+    parselinks(opts, res.text, url, (err, urls) => {
       if (err) return fn(err);
 
-      fn(null, DomUtils
-         .getElementsByTagName('a', dom, true)
-         .reduce((accum, elem) => (
-           DomUtils.hasAttrib(elem, 'href')
-             && accum.push(DomUtils.getAttributeValue(elem, 'href')),
-           accum), [])
-         .filter(o.isprotocolweb));
-    });
+      urls = normalisefilter(opts, url, urls);
 
-  o.addlinkednode = (opts, url, graph, fn, pkey) => {
-    if (graph.has(url)) {
-      graph = sitezoo_graph.setnode(
-        graph, sitezoo_node.get(url), pkey && graph.get(pkey), url);
-      
-      return fn(null, graph, pkey);
-    }
-    
-    sitezoo_log.requesturl(opts, url);
-    
-    o.request(url, opts, (err, res) => {
-      if (err) return sitezoo_log.error(opts, err);
-
-      graph = sitezoo_graph.setnode(
-        graph, sitezoo_node.get(url), pkey && graph.get(pkey), url);
-      
-      o.parselinks(opts, res.text, url, (err, urls) => {
+      addlinkednodes(opts, urls, graph, (err, graph, res3) => {
         if (err) return fn(err);
 
-        urls = o.normalisefilter(opts, url, urls);
-
-        o.addlinkednodes(opts, urls, graph, (err, graph, res3) => {
+        opts.onresponse(graph.get(url), res, url, urls, (err, node) => {
           if (err) return fn(err);
 
-          opts.onresponse(graph.get(url), res, url, urls, (err, node) => {
-            if (err) return fn(err);
-
-            graph = graph.set(node.get(url), node);
-            
-            fn(null, graph, url);
-          });
-        }, url);
-      });
+          graph = graph.set(node.get(url), node);
+          
+          fn(null, graph, url);
+        });
+      }, url);
     });
-  };
-  
-  o.addlinkednodes = (opts, urls, graph, fn, pkey) => {
-    if (!urls[0]) return fn(null, graph, pkey);
+  });
+};
 
-    o.addlinkednode(opts, urls[0], graph, (err, graph, pkey) => {
-      if (err) return fn(err);
+const addlinkednodes = (opts, urls, graph, fn, pkey) => {
+  if (!urls[0]) return fn(null, graph, pkey);
 
-      o.addlinkednodes(opts, urls.slice(1), graph, fn, pkey);
-    }, pkey);
-  };
+  addlinkednode(opts, urls[0], graph, (err, graph, pkey) => {
+    if (err) return fn(err);
 
-  o.start = (opts, fn) => {
-    opts = sitezoo_opts(opts);
+    addlinkednodes(opts, urls.slice(1), graph, fn, pkey);
+  }, pkey);
+};
 
-    o.addlinkednodes(opts, opts.urls, sitezoo_graph.get(), (err, graph) => {
-      if (err) return fn(err);
+const start = (opts, fn) => {
+  opts = sitezoo_opts(opts);
 
-      sitezoo_log.finished(opts);
+  addlinkednodes(opts, opts.urls, sitezoo_graph.get(), (err, graph) => {
+    if (err) return fn(err);
 
-      fn(null, sitezoo_graph.asurllist(graph).sort(), graph);
-    });
-  };
+    sitezoo_log.finished(opts);
 
-  return o;
+    fn(null, sitezoo_graph.asurllist(graph).sort(), graph);
+  });
+};
 
-})({});
+export default Object.assign(start, {
+  request,
+  striplink,
+  normalisehref,
+  stripsubdomain,
+  tophostname,
+  isinternal,
+  domparser,
+  isprotocolweb,
+  normalisefilter,
+  parselinks,
+  addlinkednode,
+  addlinkednode,
+  start
+})

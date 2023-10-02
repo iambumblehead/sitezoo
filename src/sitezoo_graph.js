@@ -1,64 +1,65 @@
-const immutable = require('immutable'),
+import immutable from 'immutable'
 
-      sitezoo_node = require('./sitezoo_node');
+import sitezoo_node from './sitezoo_node.js'
 
-module.exports = (o => {
+const get = () => (
+  immutable.Map({}))
 
-  o.get = () =>
-    immutable.Map({});
+const getnode = (graph, node) => (
+  graph.get(node.get('uid')))
 
-  o.getnode = (graph, node) =>
-    graph.get(node.get('uid'));
+const getnoderoot = (graph) => (
+  graph.find((val, key) => (
+    val.get('inarr').count() === 0)))
 
-  o.getnoderoot = (graph) => 
-    graph.find((val, key) => (
-      val.get('inarr').count() === 0));
+const setnode = (graph, node, pnode, refname) => {
+  const uid = node.get('uid')
+  const graph_final = graph.has(uid) ? graph : graph.set(uid, node)
 
-  o.setnode = (graph, node, pnode, refname) => {
-    var uid = node.get('uid'),
-        graph_final = graph.has(uid) ? graph : graph.set(uid, node);    
-
-    if (pnode && refname) {
-      if (!graph.has(pnode.get('uid'))) {
-        throw new Error('pnode not found');
-      }
-
-      return o.setnodeedge(graph_final, node, pnode, refname);
+  if (pnode && refname) {
+    if (!graph.has(pnode.get('uid'))) {
+      throw new Error('pnode not found');
     }
 
-    return graph_final;
-  };
+    return setnodeedge(graph_final, node, pnode, refname);
+  }
 
-  o.setnodeedge = (graph, innode, outnode, refname) => {
-    let innodekey = innode.get('uid'),
-        outnodekey = outnode.get('uid'),
-        edge_outnode,
-        edge_innode;
+  return graph_final;
+}
 
-    if (graph.has(outnodekey) &&
-        graph.has(innodekey)) {
+const setnodeedge = (graph, innode, outnode, refname) => {
+  let innodekey = innode.get('uid'),
+      outnodekey = outnode.get('uid')
 
-      graph = graph
-        .set(outnodekey, sitezoo_node.setedgein(
-          graph.get(outnodekey), innodekey, refname));
-      graph = graph
-        .set(innodekey, sitezoo_node.setedgeout(
-          graph.get(innodekey), outnodekey, refname));
-    } else {
-      console.error(graph.toJS());
-      throw new Error('[!!!] edge node not found in graph: ' + (
-        graph.has(outnodekey)
-          ? innodekey
-          : outnodekey
-      ));
-    }
-    
-    return graph;
-  };  
+  if (graph.has(outnodekey) &&
+      graph.has(innodekey)) {
 
-  o.asurllist = (graph) =>
-    Object.values(graph.toJS()).map(v => v.url);
+    graph = graph
+      .set(outnodekey, sitezoo_node.setedgein(
+        graph.get(outnodekey), innodekey, refname));
+    graph = graph
+      .set(innodekey, sitezoo_node.setedgeout(
+        graph.get(innodekey), outnodekey, refname));
+  } else {
+    console.error(graph.toJS());
+    throw new Error('[!!!] edge node not found in graph: ' + (
+      graph.has(outnodekey)
+        ? innodekey
+        : outnodekey
+    ));
+  }
   
-  return o;
+  return graph;
+};  
 
-})({});
+const asurllist = graph => (
+  Object.values(graph.toJS()).map(v => v.url));
+
+export default {
+  get,
+  getnode,
+  getnoderoot,
+  setnode,
+  setnodeedge,
+  asurllist
+}

@@ -2,19 +2,14 @@
 // Timestamp: 2017.07.22-18:02:58 (last modified)
 // Author(s): bumblehead <chris@bumblehead.com>
 
-const sitezoo_build = require('./sitezoo_build'),
-      sitezoo_opts = require('./sitezoo_opts'),
-      sitezoo_log = require('./sitezoo_log');
+import sitezoo_build from './sitezoo_build.js'
+import sitezoo_opts from './sitezoo_opts.js'
+import sitezoo_log from './sitezoo_log.js'
 
-module.exports = (o => {
-
-  o = (opts, fn) =>
-    sitezoo_build(opts, fn);
-
-  o.build = sitezoo_build;
-  o.opts = sitezoo_opts;
-  o.log = sitezoo_log;
-  
-  return o;
-
-})({});
+export default Object.assign((opts, fn) => (
+  sitezoo_build(opts, fn)
+), {
+  build: sitezoo_build,
+  opts: sitezoo_opts,
+  log: sitezoo_log
+})
